@@ -35,5 +35,5 @@ target_include_directories(srimg++ PUBLIC
 
 link_libraries(srimg++ m stdc++)
 
-add_executable (test_canny src/test/test2.cpp)
+add_executable (test_canny src/test/test3.cpp)
 target_link_libraries (test_canny ${Boost_LIBRARIES})
