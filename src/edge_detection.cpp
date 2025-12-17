@@ -14,13 +14,14 @@ Input:
     Image im: the input image
     float sigma: the standard deviation of the Gaussian kernel
 Output:
-    Image: the smoothed image (im.w, im.h, 1)
+    Image: the smoothed image
 */
 Image smooth_image(const Image& im, float sigma)
 {
-    // TODO: Your code here
-    NOT_IMPLEMENTED();
-    return im;
+    Image filter = make_gaussian_filter(sigma);
+    Image im_smooth = convolve_image(im, filter, false);
+
+    return im_smooth;
 }
 
 
@@ -34,9 +35,12 @@ Output:
 */
 pair<Image,Image> compute_gradient(const Image& im)
 {
-    // TODO: Your code here
-    NOT_IMPLEMENTED();
-    return{im, im};
+    pair<Image, Image> sobel = sobel_image(im);
+    Image mag = sobel.first;
+    Image dir = sobel.second;
+    feature_normalize(mag);
+
+    return{mag, dir};
 }
 
 
@@ -56,19 +60,46 @@ Image non_maximum_suppression(const Image& mag, const Image& dir)
     // Iterate through the image and perform non-maximum suppression
     for (int y = 0; y < mag.h; y++) {
         for (int x = 0; x < mag.w; x++) {
-            
-            // TODO: Your code here
-            NOT_IMPLEMENTED();
-
-            // Get the direction of the gradient at the current pixel
+            float direction = dir(x, y, 0);
+            if (direction < 0) {
+                direction += M_PI;
+            }
 
             // Round the direction to the nearest multiple of PI/4
-
             // Get the magnitude of the gradient of the two neighbors along that direction
-            // (Hint: use clamped_pixel to avoid going out of bounds)            
+            int angle = abs(round(direction / (M_PI / 4)));
+            switch (angle)
+            {
+            case 1:
+                neighbor1 = mag.clamped_pixel(x - 1, y - 1, 0);
+                neighbor2 = mag.clamped_pixel(x + 1, y + 1, 0);
+                break;
+            case 2:
+                neighbor1 = mag.clamped_pixel(x, y - 1, 0);
+                neighbor2 = mag.clamped_pixel(x, y + 1, 0);
+                break;
+            case 3:
+                neighbor1 = mag.clamped_pixel(x + 1, y - 1, 0);
+                neighbor2 = mag.clamped_pixel(x - 1, y + 1, 0);
+                break;
+            case 0:
+            case 4:
+                neighbor1 = mag.clamped_pixel(x - 1, y, 0);
+                neighbor2 = mag.clamped_pixel(x + 1, y, 0);
+                break;
+            default:
+                printf("Error: angle not recognized %d\n", angle);
+                break;
+            }
 
             // If the magnitude of the gradient of the current pixel is greater than that of both neighbors,
             // then it is a local maximum
+            if (mag(x, y, 0) >= neighbor1 && mag(x, y, 0) >= neighbor2) {
+                nms(x, y, 0) = mag(x, y, 0);
+            }
+            else {
+                nms(x, y, 0) = 0;
+            }
         }
     }
 
@@ -92,9 +123,19 @@ Image double_thresholding(const Image& im, float lowThreshold, float highThresho
 {
     Image res(im.w, im.h, im.c);
 
-    // TODO: Your code here
-    NOT_IMPLEMENTED();
-
+    for (int y = 0; y < im.h; y ++) {
+        for (int x = 0; x < im.w; x ++) {
+            // strong
+            if(im(x,y,0) >= highThreshold)
+                res(x,y,0) = strongVal;
+            // weak
+            else if (im(x,y,0) >= lowThreshold)
+                res(x,y,0) = weakVal;
+            // zeros
+            else
+                res(x,y,0) = 0.0;
+        }
+    }
     return res;
 }
 
@@ -114,10 +155,23 @@ Image edge_tracking(const Image& im, float weak, float strong)
 
     for (int y=0; y < im.h; ++y) {
         for (int x=0; x < im.w; ++x) {
-            // TODO: Your code here
-            NOT_IMPLEMENTED();
-
-            // Hint: use clamped_pixel when checking the neighbors to avoid going out of bounds
+            if (im(x,y,0) == strong)
+                res(x,y,0) = 1.0;
+            else if(im(x,y,0) == weak){
+                if((im.clamped_pixel(x-1, y-1, 0) == strong) or
+                   (im.clamped_pixel(x,   y-1, 0) == strong) or
+                   (im.clamped_pixel(x+1, y-1, 0) == strong) or
+                   (im.clamped_pixel(x-1, y,   0) == strong) or
+                   (im.clamped_pixel(x+1, y,   0) == strong) or
+                   (im.clamped_pixel(x-1, y+1, 0) == strong) or
+                   (im.clamped_pixel(x,   y+1, 0) == strong) or
+                   (im.clamped_pixel(x+1, y+1, 0) == strong))
+                    res(x,y,0) = 1.0;
+                else
+                    res(x,y,0) = 0.0;
+            }
+            else
+                res(x,y,0) = 0.0;
         }
     }
     return res;
