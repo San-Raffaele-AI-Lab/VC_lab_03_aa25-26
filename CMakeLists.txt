@@ -9,18 +9,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set (Boost_USE_STATIC_LIBS OFF)
 find_package (Boost REQUIRED COMPONENTS unit_test_framework)
-include_directories (${Boost_INCLUDE_DIRS})
+include_directories (${Boost_INCLUDE_DIRS} include config)
 
 # Add Eigen include path
 set(EIGEN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_library(srimg++ SHARED
             src/utils.cpp
-            src/utils.h
-            src/image.h
             src/load_image.cpp
-            src/stb_image.h
-            src/stb_image_write.h
             src/process_image.cpp
             src/access_image.cpp
             src/filter_image.cpp
@@ -35,5 +31,5 @@ target_include_directories(srimg++ PUBLIC
 
 link_libraries(srimg++ m stdc++)
 
-add_executable (test_canny src/test/test3.cpp)
+add_executable (test_canny src/test/test2.cpp)
 target_link_libraries (test_canny ${Boost_LIBRARIES})

@@ -3,7 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
-#include "image.h"
+#include "../include/image.h"
 
 #include <Eigen/Core>
 #include <Eigen/Dense>

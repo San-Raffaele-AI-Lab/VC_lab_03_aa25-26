@@ -3,7 +3,7 @@
 #include <cassert>
 #include <cmath>
 
-#include "image.h"
+#include "../include/image.h"
 
 using namespace std;
 

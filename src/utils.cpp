@@ -2,8 +2,8 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "utils.h"
-#include "image.h"
+#include "../include/utils.h"
+#include "../include/image.h"
 
 int tests_total = 0;
 int tests_fail = 0;
